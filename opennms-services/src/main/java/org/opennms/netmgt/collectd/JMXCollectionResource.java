@@ -28,120 +28,67 @@
 
 package org.opennms.netmgt.collectd;
 
-import java.io.File;
-
-import org.opennms.netmgt.config.collector.CollectionAttributeType;
 import org.opennms.netmgt.config.collector.ServiceParameters;
-import org.opennms.netmgt.model.RrdRepository;
 
 /**
  * The Class JMXCollectionResource.
  */
-public class JMXCollectionResource extends AbstractCollectionResource {
-
-    /** The resource name. */
-    String m_resourceName;
-
-    /** The node id. */
-    private int m_nodeId;
+public abstract class JMXCollectionResource extends AbstractCollectionResource {
 
     /**
      * Instantiates a new JMX collection resource.
      *
-     * @param agent
-     *            the agent
-     * @param resourceName
-     *            the resource name
+     * @param agent the agent
      */
-    JMXCollectionResource(CollectionAgent agent, String resourceName) {
+    public JMXCollectionResource(CollectionAgent agent) {
         super(agent);
-        m_resourceName = resourceName;
-        m_nodeId = agent.getNodeId();
     }
 
-    /*
-     * (non-Javadoc)
-     * @see java.lang.Object#toString()
+    /* (non-Javadoc)
+     * @see org.opennms.netmgt.collectd.AbstractCollectionResource#shouldPersist(org.opennms.netmgt.config.collector.ServiceParameters)
      */
-    @Override
-    public String toString() {
-        return "node[" + m_nodeId + ']';
-    }
-
-    /*
-     * (non-Javadoc)
-     * @see org.opennms.netmgt.collectd.AbstractCollectionResource#getType()
-     */
-    @Override
-    public int getType() {
-        return -1; // Is this correct?
-    }
-
-    /*
-     * (non-Javadoc)
-     * @see org.opennms.netmgt.collectd.AbstractCollectionResource#rescanNeeded()
-     */
-    @Override
-    public boolean rescanNeeded() {
-        return false;
-    }
-
-    /*
-     * (non-Javadoc)
-     * @see org.opennms.netmgt.collectd.AbstractCollectionResource#shouldPersist(org.opennms.netmgt.config.collector.
-     * ServiceParameters)
-     */
-    @Override
     public boolean shouldPersist(ServiceParameters params) {
         return true;
+    }
+
+    /* (non-Javadoc)
+     * @see org.opennms.netmgt.collectd.AbstractCollectionResource#rescanNeeded()
+     */
+    public boolean rescanNeeded() {
+        return false;
     }
 
     /**
      * Sets the attribute value.
      *
-     * @param type
-     *            the type
-     * @param value
-     *            the value
+     * @param type the type
+     * @param value the value
      */
-    public void setAttributeValue(CollectionAttributeType type, String value) {
+    public void setAttributeValue(JMXCollectionAttributeType type, String value) {
         JMXCollectionAttribute attr = new JMXCollectionAttribute(this, type, type.getName(), value);
         addAttribute(attr);
     }
 
-    /*
-     * (non-Javadoc)
-     * @see
-     * org.opennms.netmgt.collectd.AbstractCollectionResource#getResourceDir(org.opennms.netmgt.model.RrdRepository)
+    /* (non-Javadoc)
+     * @see org.opennms.netmgt.collectd.AbstractCollectionResource#getType()
      */
-    @Override
-    public File getResourceDir(RrdRepository repository) {
-        return new File(repository.getRrdBaseDir(), getParent() + File.separator + m_resourceName);
+    public int getType() {
+        return -1; // Is this right?
     }
 
-    /*
-     * (non-Javadoc)
+    /* (non-Javadoc)
      * @see org.opennms.netmgt.config.collector.CollectionResource#getResourceTypeName()
      */
-    @Override
-    public String getResourceTypeName() {
-        return "node"; // All node resources for JMX; nothing of interface or "indexed resource" type
-    }
+    public abstract String getResourceTypeName();
 
-    /*
-     * (non-Javadoc)
+    /* (non-Javadoc)
      * @see org.opennms.netmgt.config.collector.CollectionResource#getInstance()
      */
-    @Override
-    public String getInstance() {
-        return null; // For node type resources, use the default instance
-    }
+    public abstract String getInstance();
 
-    /*
-     * (non-Javadoc)
+    /* (non-Javadoc)
      * @see org.opennms.netmgt.config.collector.CollectionResource#getParent()
      */
-    @Override
     public String getParent() {
         return m_agent.getStorageDir().toString();
     }
