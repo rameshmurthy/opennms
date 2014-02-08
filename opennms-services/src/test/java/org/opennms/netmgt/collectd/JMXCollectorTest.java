@@ -148,7 +148,9 @@ public class JMXCollectorTest {
         //start collection
         CollectionSet collectionSet = jmxCollector.collect(collectionAgent, null, null);
         JMXCollectionSet jmxCollectionSet = (JMXCollectionSet) collectionSet;
-        JMXCollectionResource jmxCollectionResource = jmxCollectionSet.getResource();
+        List<JMXCollectionResource> jmxCollectionResources = jmxCollectionSet.getCollectionResources();
+        assertEquals(1, jmxCollectionResources.size());
+        JMXCollectionResource jmxCollectionResource = jmxCollectionResources.get(0);
         AttributeGroup group = jmxCollectionResource.getGroup(new AttributeGroupType("java_lang_type_Compilation", "all"));
         assertEquals(1, group.getAttributes().size());
         printDebugAttributeGroup(group);
@@ -169,7 +171,9 @@ public class JMXCollectorTest {
         //start collection
         CollectionSet collectionSet = jmxCollector.collect(collectionAgent, null, null);
         JMXCollectionSet jmxCollectionSet = (JMXCollectionSet) collectionSet;
-        JMXCollectionResource jmxCollectionResource = jmxCollectionSet.getResource();
+        List<JMXCollectionResource> jmxCollectionResources = jmxCollectionSet.getCollectionResources();
+        assertEquals(1, jmxCollectionResources.size());
+        JMXCollectionResource jmxCollectionResource = jmxCollectionResources.get(0);
         AttributeGroup group = jmxCollectionResource.getGroup(new AttributeGroupType("java_lang_type_Compilation", "all"));
         assertEquals(0, group.getAttributes().size());
         printDebugAttributeGroup(group);
@@ -186,7 +190,9 @@ public class JMXCollectorTest {
         //start collection
         CollectionSet collectionSet = jmxCollector.collect(collectionAgent, null, null);
         JMXCollectionSet jmxCollectionSet = (JMXCollectionSet) collectionSet;
-        JMXCollectionResource jmxCollectionResource = jmxCollectionSet.getResource();
+        List<JMXCollectionResource> jmxCollectionResources = jmxCollectionSet.getCollectionResources();
+        assertEquals(1, jmxCollectionResources.size());
+        JMXCollectionResource jmxCollectionResource = jmxCollectionResources.get(0);
         AttributeGroup group = jmxCollectionResource.getGroup(new AttributeGroupType("java_lang_type_Compilation", "all"));
         assertEquals(1, group.getAttributes().size());
         printDebugAttributeGroup(group);
@@ -203,7 +209,9 @@ public class JMXCollectorTest {
         //start collection
         CollectionSet collectionSet = jmxCollector.collect(collectionAgent, null, null);
         JMXCollectionSet jmxCollectionSet = (JMXCollectionSet) collectionSet;
-        JMXCollectionResource jmxCollectionResource = jmxCollectionSet.getResource();
+        List<JMXCollectionResource> jmxCollectionResources = jmxCollectionSet.getCollectionResources();
+        assertEquals(1, jmxCollectionResources.size());
+        JMXCollectionResource jmxCollectionResource = jmxCollectionResources.get(0);
         AttributeGroup group = jmxCollectionResource.getGroup(new AttributeGroupType("java_lang_type_OperatingSystem", "all"));
         assertEquals(8, group.getAttributes().size());
         printDebugAttributeGroup(group);
@@ -220,7 +228,9 @@ public class JMXCollectorTest {
         //start collection
         CollectionSet collectionSet = jmxCollector.collect(collectionAgent, null, null);
         JMXCollectionSet jmxCollectionSet = (JMXCollectionSet) collectionSet;
-        JMXCollectionResource jmxCollectionResource = jmxCollectionSet.getResource();
+        List<JMXCollectionResource> jmxCollectionResources = jmxCollectionSet.getCollectionResources();
+        assertEquals(1, jmxCollectionResources.size());
+        JMXCollectionResource jmxCollectionResource = jmxCollectionResources.get(0);
         AttributeGroup group = jmxCollectionResource.getGroup(new AttributeGroupType("java_lang_type_Memory", "all"));
         assertEquals(4, group.getAttributes().size());
         printDebugAttributeGroup(group);
@@ -237,7 +247,9 @@ public class JMXCollectorTest {
         //start collection
         CollectionSet collectionSet = jmxCollector.collect(collectionAgent, null, null);
         JMXCollectionSet jmxCollectionSet = (JMXCollectionSet) collectionSet;
-        JMXCollectionResource jmxCollectionResource = jmxCollectionSet.getResource();
+        List<JMXCollectionResource> jmxCollectionResources = jmxCollectionSet.getCollectionResources();
+        assertEquals(1, jmxCollectionResources.size());
+        JMXCollectionResource jmxCollectionResource = jmxCollectionResources.get(0);
         AttributeGroup group = jmxCollectionResource.getGroup(new AttributeGroupType("java_lang_type_Memory", "all"));
         assertEquals(3, group.getAttributes().size());
         printDebugAttributeGroup(group);
@@ -289,6 +301,11 @@ public class JMXCollectorTest {
     }
     
     public class JMXCollectorImpl extends JMXCollector {
+        public JMXCollectorImpl() {
+            super();
+            setServiceName("JMXCollectorTest");
+            setUseFriendlyName(true);
+        }
 
         @Override
         public ConnectionWrapper getMBeanServerConnection(Map<String, Object> map, InetAddress address) {

@@ -45,10 +45,27 @@ public abstract class JMXCollectionResource extends AbstractCollectionResource {
     }
 
     /* (non-Javadoc)
-     * @see org.opennms.netmgt.collectd.AbstractCollectionResource#shouldPersist(org.opennms.netmgt.config.collector.ServiceParameters)
+     * @see org.opennms.netmgt.config.collector.CollectionResource#getInstance()
      */
-    public boolean shouldPersist(ServiceParameters params) {
-        return true;
+    public abstract String getInstance();
+
+    /* (non-Javadoc)
+     * @see org.opennms.netmgt.config.collector.CollectionResource#getParent()
+     */
+    public String getParent() {
+        return m_agent.getStorageDir().toString();
+    }
+
+    /* (non-Javadoc)
+     * @see org.opennms.netmgt.config.collector.CollectionResource#getResourceTypeName()
+     */
+    public abstract String getResourceTypeName();
+
+    /* (non-Javadoc)
+     * @see org.opennms.netmgt.collectd.AbstractCollectionResource#getType()
+     */
+    public int getType() {
+        return -1; // Is this right?
     }
 
     /* (non-Javadoc)
@@ -70,26 +87,9 @@ public abstract class JMXCollectionResource extends AbstractCollectionResource {
     }
 
     /* (non-Javadoc)
-     * @see org.opennms.netmgt.collectd.AbstractCollectionResource#getType()
+     * @see org.opennms.netmgt.collectd.AbstractCollectionResource#shouldPersist(org.opennms.netmgt.config.collector.ServiceParameters)
      */
-    public int getType() {
-        return -1; // Is this right?
-    }
-
-    /* (non-Javadoc)
-     * @see org.opennms.netmgt.config.collector.CollectionResource#getResourceTypeName()
-     */
-    public abstract String getResourceTypeName();
-
-    /* (non-Javadoc)
-     * @see org.opennms.netmgt.config.collector.CollectionResource#getInstance()
-     */
-    public abstract String getInstance();
-
-    /* (non-Javadoc)
-     * @see org.opennms.netmgt.config.collector.CollectionResource#getParent()
-     */
-    public String getParent() {
-        return m_agent.getStorageDir().toString();
+    public boolean shouldPersist(ServiceParameters params) {
+        return true;
     }
 }
