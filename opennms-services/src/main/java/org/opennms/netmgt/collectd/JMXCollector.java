@@ -28,7 +28,6 @@
 
 package org.opennms.netmgt.collectd;
 
-import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.UndeclaredThrowableException;
 import java.net.InetAddress;
@@ -59,13 +58,7 @@ import org.opennms.netmgt.config.BeanInfo;
 import org.opennms.netmgt.config.JMXDataCollectionConfigFactory;
 import org.opennms.netmgt.config.collectd.jmx.Attrib;
 import org.opennms.netmgt.config.collector.AttributeGroupType;
-import org.opennms.netmgt.config.collector.CollectionAttribute;
-import org.opennms.netmgt.config.collector.CollectionAttributeType;
-import org.opennms.netmgt.config.collector.CollectionResource;
 import org.opennms.netmgt.config.collector.CollectionSet;
-import org.opennms.netmgt.config.collector.CollectionSetVisitor;
-import org.opennms.netmgt.config.collector.Persister;
-import org.opennms.netmgt.config.collector.ServiceParameters;
 import org.opennms.netmgt.config.collector.ServiceParameters.ParameterName;
 import org.opennms.netmgt.model.RrdRepository;
 import org.opennms.netmgt.model.events.EventProxy;
@@ -517,30 +510,6 @@ public abstract class JMXCollector implements ServiceCollector {
         return AlphaNumeric.parseAndReplace(objectName, '_');
     }
     
-    /*
-     * This method strips out the illegal character '/' and attempts to keep
-     * the length of the key plus ds name to 19 or less characters. The slash
-     * character cannot be in the name since it is an illegal character in
-     * file names.
-     */
-    private String fixKey(String key, String attrName, String substitutions) {
-        String newKey = key;
-        if (key.startsWith(File.separator)) {
-            newKey = key.substring(1);
-        }
-        if (substitutions != null && substitutions.length() > 0) {
-            StringTokenizer st = new StringTokenizer(substitutions, ",");
-            while (st.hasMoreTokens()) {
-                String token = st.nextToken();
-                int index = token.indexOf('|');
-                if (newKey.equals(token.substring(0, index))) {
-                    newKey = token.substring(index + 1);
-                }
-            }
-        }
-        return newKey;
-    }
-
     /**
      * <p>getRRDValue_isthis_used_</p>
      *
@@ -679,219 +648,6 @@ public abstract class JMXCollector implements ServiceCollector {
      */
     public void setUseFriendlyName(boolean useFriendlyName) {
         this.useFriendlyName = useFriendlyName;
-    }
-    
-    class JMXCollectionAttributeType implements CollectionAttributeType {
-        JMXDataSource m_dataSource;
-        AttributeGroupType m_groupType;
-        String m_name;
-
-        protected JMXCollectionAttributeType(JMXDataSource dataSource, String key, String substitutions,  AttributeGroupType groupType) {
-            m_groupType=groupType;
-            m_dataSource=dataSource;
-            m_name=createName(key,substitutions);
-        }
-
-        private String createName(String key, String substitutions) {
-            String name=m_dataSource.getName();
-            if(key!=null && !key.equals("")) {
-                name=fixKey(key, m_dataSource.getName(),substitutions)+"_"+name;
-            }
-            return name;
-        }
-
-        @Override
-        public AttributeGroupType getGroupType() {
-            return m_groupType;
-        }
-
-        @Override
-        public void storeAttribute(CollectionAttribute attribute, Persister persister) {
-            //Only numeric data comes back from JMX in data collection
-            persister.persistNumericAttribute(attribute);
-        }
-
-        @Override
-        public String getName() {
-            return m_name;
-        }
-
-        @Override
-        public String getType() {
-            return m_dataSource.getType();
-        }
-
-    }
-    
-    class JMXCollectionAttribute extends AbstractCollectionAttribute implements CollectionAttribute {
-
-        String m_alias;
-        String m_value;
-        JMXCollectionResource m_resource;
-        CollectionAttributeType m_attribType;
-        
-        JMXCollectionAttribute(JMXCollectionResource resource, CollectionAttributeType attribType, String alias, String value) {
-            super();
-            m_resource=resource;
-            m_attribType=attribType;
-            m_alias = alias;
-            m_value = value;
-        }
-
-        @Override
-        public CollectionAttributeType getAttributeType() {
-            return m_attribType;
-        }
-
-        @Override
-        public String getName() {
-            return m_alias;
-        }
-
-        @Override
-        public String getNumericValue() {
-            return m_value;
-        }
-
-        @Override
-        public CollectionResource getResource() {
-            return m_resource;
-        }
-
-        @Override
-        public String getStringValue() {
-            return m_value;
-        }
-
-        @Override
-        public boolean shouldPersist(ServiceParameters params) {
-            return true;
-        }
-
-        @Override
-        public String getType() {
-            return m_attribType.getType();
-        }
-
-        @Override
-        public String toString() {
-             return "alias " + m_alias + ", value " + m_value + ", resource "
-                 + m_resource + ", attributeType " + m_attribType;
-        }
-
-        @Override
-        public String getMetricIdentifier() {
-            String metricId = m_attribType.getGroupType().getName();
-            metricId = metricId.replace("_type_", ":type=");
-            metricId = metricId.replace("_", ".");
-            metricId = metricId.concat(".");
-            metricId = metricId.concat(getName());
-            return "JMX_".concat(metricId);
-
-        }
-        
-    }
- 
-    
-    class JMXCollectionResource extends AbstractCollectionResource {
-        String m_resourceName;
-        private int m_nodeId;
-        
-        JMXCollectionResource(CollectionAgent agent, String resourceName) { 
-            super(agent);
-            m_resourceName=resourceName;
-            m_nodeId = agent.getNodeId();
-        }
-        
-        @Override
-        public String toString() {
-            return "node["+m_nodeId+']';
-        }
-        
-        @Override
-        public int getType() {
-            return -1; //Is this correct?
-        }
-
-        @Override
-        public boolean rescanNeeded() {
-            return false;
-        }
-
-        @Override
-        public boolean shouldPersist(ServiceParameters params) {
-            return true;
-        }
-
-        public void setAttributeValue(CollectionAttributeType type, String value) {
-            JMXCollectionAttribute attr = new JMXCollectionAttribute(this, type, type.getName(), value);
-            addAttribute(attr);
-        }
-
-        @Override
-        public File getResourceDir(RrdRepository repository) {
-            return new File(repository.getRrdBaseDir(), getParent() + File.separator + m_resourceName);
-        }
-        
-        @Override
-        public String getResourceTypeName() {
-            return "node"; //All node resources for JMX; nothing of interface or "indexed resource" type
-        }
-        
-        @Override
-        public String getInstance() {
-            return null; //For node type resources, use the default instance
-        }
-
-        @Override
-        public String getParent() {
-            return m_agent.getStorageDir().toString();
-        }
-    }
-    
-    class JMXCollectionSet implements CollectionSet {
-        private int m_status;
-        private Date m_timestamp;
-        private JMXCollectionResource m_collectionResource;
-        
-        JMXCollectionSet(CollectionAgent agent, String resourceName) {
-            m_status=ServiceCollector.COLLECTION_FAILED;
-            m_collectionResource=new JMXCollectionResource(agent, resourceName);
-        }
-        
-        public JMXCollectionResource getResource() {
-            return m_collectionResource;
-        }
-
-        public void setStatus(int status) {
-            m_status=status;
-        }
-        
-        @Override
-        public int getStatus() {
-            return m_status;
-        }
-
-        @Override
-        public void visit(CollectionSetVisitor visitor) {
-            visitor.visitCollectionSet(this);
-            m_collectionResource.visit(visitor);
-            visitor.completeCollectionSet(this);
-        }
-
-        @Override
-		public boolean ignorePersist() {
-			return false;
-		}        
-		
-		@Override
-		public Date getCollectionTimestamp() {
-			return m_timestamp;
-		}
-        public void setCollectionTimestamp(Date timestamp) {
-        	this.m_timestamp = timestamp;
-		}
-
     }
     
     /** {@inheritDoc} */
