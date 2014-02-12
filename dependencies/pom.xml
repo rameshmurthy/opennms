@@ -56,5 +56,6 @@
     <module>spring-web</module>
     <module>tracker</module>
     <module>twitter4j</module>
+    <module>vtd-xml</module>
   </modules>
 </project>
