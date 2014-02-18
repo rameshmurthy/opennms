@@ -118,6 +118,11 @@
     Configure Path Outage</a>
   </p>
   
+  <p>
+    <a href="admin/nodemanagement/rrdDatasourceMapping.jsp?node=<%=nodeId%>">
+    Configure RRD datasource Mapping</a>
+  </p>
+
       <% if ("true".equalsIgnoreCase(Vault.getProperty("opennms.rancidIntegrationEnabled"))) { %>
   <p>
     <a href="admin/rancid/rancidAdmin.htm?node=<%=nodeId%>">
@@ -175,6 +180,10 @@
     before sending Node Down notifications for this node.
   </p>
   
+  <p>
+    <b>Configure RRD DataSource Mapping</b> Update RRD datasource mappings for this node.
+  </p>
+
         <% if ("true".equalsIgnoreCase(Vault.getProperty("opennms.rancidIntegrationEnabled"))) { %>
   <p>
     <b>Configure Rancid</b> Configure rancid group router.db files and rancid cloginrc

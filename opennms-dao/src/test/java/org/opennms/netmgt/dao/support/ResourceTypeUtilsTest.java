@@ -44,15 +44,17 @@ import java.util.Set;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-
 import org.opennms.core.utils.PropertiesCache;
 import org.opennms.netmgt.mock.MockResourceType;
 import org.opennms.netmgt.model.OnmsAttribute;
 import org.opennms.netmgt.model.OnmsResource;
 import org.opennms.netmgt.model.RrdGraphAttribute;
+import org.opennms.netmgt.model.StringPropertyAttribute;
+import org.opennms.netmgt.model.VirtualAttribute;
 import org.opennms.netmgt.rrd.RrdUtils;
 import org.opennms.test.FileAnticipator;
 import org.opennms.test.ThrowableAnticipator;
+import org.opennms.test.mock.MockUtil;
 
 /**
  * @author <a href="mailto:dj@opennms.org">DJ Gregor</a>
@@ -66,6 +68,8 @@ public class ResourceTypeUtilsTest {
     @Before
     public void setUp() throws Exception {
         m_fileAnticipator = new FileAnticipator();
+        m_fileAnticipator.initialize();
+        m_snmp = m_fileAnticipator.tempDir(DefaultResourceDao.SNMP_DIRECTORY);
         
         RrdUtils.setStrategy(new NullRrdStrategy());
     }
@@ -170,19 +174,52 @@ public class ResourceTypeUtilsTest {
         assertEquals("2013", ResourceTypeUtils.getStringProperty(resourceDir, "year"));
     }
 
+    @Test
+    public void testLoadVirtualAttributes() throws Exception {
+        OnmsResource childResource = createResource("1");
+        OnmsResource sourceResource = createResource("2");
+        createVirtualAttributesFile(childResource, "foo2=node[2].nodeSnmp[].bar\nfoo3=node[2].interfaceSnmp[eth0].a\n", false);
+        createPropertiesFile(sourceResource, "a=bar", false);
+
+        File resourceDir = new File(m_fileAnticipator.getTempDir(), "snmp/1/eth0");
+        Properties p = ResourceTypeUtils.getVirtualProperties(resourceDir);
+
+        Set<OnmsAttribute> set = ResourceTypeUtils.getAttributesAtRelativePath(m_fileAnticipator.getTempDir(), "snmp/1/eth0");
+        assertNotNull("set should not be null", set);
+        assertEquals("set size", 2, set.size());
+        for(OnmsAttribute attr : set) {
+            MockUtil.println(attr.getName());
+            if (VirtualAttribute.class.isAssignableFrom(attr.getClass())) {
+                VirtualAttribute v = (VirtualAttribute) attr;
+                if (v.getName().equals("foo2")) {
+                    assertEquals("virtual-rrd", "node[2].nodeSnmp[].bar", v.getOriginalResourceId());
+                }
+                if (v.getName().equals("foo3")) {
+                    assertEquals("virtual-rrd", "node[2].interfaceSnmp[eth0].a", v.getOriginalResourceId());
+                }
+            }
+        }
+
+        assertNotNull("properties should not be null", p);
+        assertEquals("properties size", 2, p.size());
+        assertNotNull("property 'foo' should exist", p.get("foo2"));
+        assertEquals("property 'foo' value", "node[2].nodeSnmp[].bar", p.get("foo2"));
+    }
 
     private OnmsResource createResource() {
-        OnmsResource topResource = new OnmsResource("1", "Node One", new MockResourceType(), new HashSet<OnmsAttribute>(0));
+        return createResource("1");
+    }
+
+    private OnmsResource createResource(String node) {
+        OnmsResource topResource = new OnmsResource(node, "Node One", new MockResourceType(), new HashSet<OnmsAttribute>(0));
         Set<OnmsAttribute> attributes = new HashSet<OnmsAttribute>(1);
-        attributes.add(new RrdGraphAttribute("foo", "1/eth0", "foo.jrb"));
+        attributes.add(new RrdGraphAttribute("foo", node+"/eth0", "foo.jrb"));
         OnmsResource childResource = new OnmsResource("eth0", "Interface eth0", new MockResourceType(), attributes);
         childResource.setParent(topResource);
         return childResource;
     }
 
     private File createPropertiesFile(OnmsResource childResource, String propertiesContent, boolean onlyCreateParentDirectories) throws IOException {
-        m_fileAnticipator.initialize();
-        m_snmp = m_fileAnticipator.tempDir(DefaultResourceDao.SNMP_DIRECTORY);
         m_node = m_fileAnticipator.tempDir(m_snmp, childResource.getParent().getName());
         m_intf = m_fileAnticipator.tempDir(m_node, childResource.getName());
         if (onlyCreateParentDirectories) {
@@ -192,4 +229,13 @@ public class ResourceTypeUtilsTest {
         }
     }
     
+    private File createVirtualAttributesFile(OnmsResource childResource, String propertiesContent, boolean onlyCreateParentDirectories) throws IOException {
+        m_node = m_fileAnticipator.tempDir(m_snmp, childResource.getParent().getName());
+        m_intf = m_fileAnticipator.tempDir(m_node, childResource.getName());
+        if (onlyCreateParentDirectories) {
+            return new File(m_intf, "virtual-datasources.properties");
+        } else {
+            return m_fileAnticipator.tempFile(m_intf, "virtual-datasources.properties", propertiesContent);
+        }
+    }
 }

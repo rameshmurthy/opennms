@@ -304,6 +304,23 @@ public class OnmsResource implements Comparable<OnmsResource> {
         return properties;
     }
     
+    /**
+     * Get the virtual attributes for this resource, if any.
+     *
+     * @return a {@link java.util.Map} object.
+     */
+    public Map<String, VirtualAttribute> getVirtualAttributes() {
+        Map<String, VirtualAttribute> properties = new HashMap<String, VirtualAttribute>();
+        for (OnmsAttribute attribute : getAttributes()) {
+            if (VirtualAttribute.class.isAssignableFrom(attribute.getClass())) {
+                VirtualAttribute attr = (VirtualAttribute) attribute;
+                properties.put(attr.getName(), attr);
+            }
+        }
+
+        return properties;
+    }
+
     private static String encode(String string) {
         if (string == null) return null;
         try {
