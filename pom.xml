@@ -621,8 +621,9 @@
         <version>2.2</version>
         <dependencies>
           <dependency>
-            <groupId>postgresql</groupId>
+            <groupId>org.postgresql</groupId>
             <artifactId>postgresql</artifactId>
+            <version>[9.0,]</version>
           </dependency>
         </dependencies>
       </plugin>
