@@ -135,6 +135,9 @@
     <module>opennms-wmi</module>
     <module>opennms-asterisk</module>
   </modules>
+  <prerequisites>
+    <maven>2.2.1</maven>
+  </prerequisites>
   <build>
   <extensions>
     <extension>
@@ -145,13 +148,6 @@
   </extensions>
   <pluginManagement>
     <plugins>    
-      <!--
-      <plugin>
-        <groupId>ch.elca.el4j.maven.plugins</groupId>
-        <artifactId>maven-depgraph-plugin</artifactId>
-        <version>1.9</version>
-      </plugin>
-      -->
       <plugin>
         <groupId>org.apache.servicemix.tooling</groupId>
         <artifactId>depends-maven-plugin</artifactId>
@@ -423,12 +419,12 @@
         <version>1.0-alpha-7</version>
       </plugin>
       <plugin>
-        <groupId>org.mortbay.jetty</groupId>
+        <groupId>org.eclipse.jetty</groupId>
         <artifactId>jetty-maven-plugin</artifactId>
         <version>${jettyVersion}</version>
       </plugin>
       <plugin>
-        <groupId>org.mortbay.jetty</groupId>
+        <groupId>org.eclipse.jetty</groupId>
         <artifactId>jetty-jspc-maven-plugin</artifactId>
         <version>${jettyVersion}</version>
       </plugin>
@@ -508,7 +504,7 @@
               </pluginExecution>
               <pluginExecution>
                 <pluginExecutionFilter>
-                  <groupId>org.mortbay.jetty</groupId>
+                  <groupId>org.eclipse.jetty</groupId>
                   <artifactId>jetty-jspc-maven-plugin</artifactId>
                   <versionRange>[1.0,)</versionRange>
                   <goals>
@@ -861,31 +857,15 @@
             <minimumTokens>100</minimumTokens>
          </configuration>
       </plugin>
-<!--
-      <plugin>
-        <groupId>org.codehaus.mojo</groupId>
-        <artifactId>findbugs-maven-plugin</artifactId>
-      </plugin>
--->
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-jxr-plugin</artifactId>
         <version>2.3</version>
       </plugin>
-<!--
-      <plugin>
-        <groupId>org.codehaus.mojo</groupId>
-        <artifactId>taglist-maven-plugin</artifactId>
-        <version>2.0</version>
-      </plugin>
--->
     </plugins>
   </reporting>
 
   <properties>
-
-    
-  
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
 
@@ -972,7 +952,7 @@
    <maven.clover.licenseLocation>${user.home}/.m2/clover.license</maven.clover.licenseLocation>
 
     <!-- dependency versions -->
-    <activemqVersion>5.6.0</activemqVersion>
+    <activemqVersion>5.7.0</activemqVersion>
     <camelVersion>2.12.3</camelVersion>
     <cloverVersion>3.2.0</cloverVersion>
     <commonsBeanutilsVersion>1.8.3</commonsBeanutilsVersion>
@@ -990,7 +970,7 @@
     <httpclientVersion>4.2.5</httpclientVersion>
     <jacksonVersion>1.9.13</jacksonVersion>
     <jasperreportsVersion>3.7.6</jasperreportsVersion>
-    <jettyVersion>7.6.12.v20130726</jettyVersion>
+    <jettyVersion>9.1.2.v20140210</jettyVersion>
     <karafVersion>2.3.2</karafVersion>
     <felixVersion>2.2.0</felixVersion>
     <liquibaseVersion>2.0.5</liquibaseVersion>
@@ -2657,35 +2637,6 @@
           </exclusion>
         </exclusions>
       </dependency>
-      <!--
-
-      JMesa is the latest version of the extremecomponents library. We
-      should eventually migrate our code to use it.
-
-      <dependency>
-        <groupId>org.jmesa</groupId>
-        <artifactId>jmesa</artifactId>
-        <version>3.0.4</version>
-        <exclusions>
-          <exclusion>
-            <groupId>org.springframework</groupId>
-            <artifactId>spring-core</artifactId>
-          </exclusion>
-          <exclusion>
-            <groupId>org.springframework</groupId>
-            <artifactId>spring-context</artifactId>
-          </exclusion>
-          <exclusion>
-            <groupId>org.springframework</groupId>
-            <artifactId>spring-web</artifactId>
-          </exclusion>
-          <exclusion>
-            <groupId>org.springframework</groupId>
-            <artifactId>spring-webmvc-portlet</artifactId>
-          </exclusion>
-        </exclusions>
-      </dependency>
-      -->
       <dependency>
         <groupId>com.caucho</groupId>
         <artifactId>hessian</artifactId>
@@ -2780,11 +2731,6 @@
       </dependency>
       <dependency>
         <groupId>org.eclipse.jetty</groupId>
-        <artifactId>jetty-ajp</artifactId>
-        <version>${jettyVersion}</version>
-      </dependency>
-      <dependency>
-        <groupId>org.eclipse.jetty</groupId>
         <artifactId>jetty-continuation</artifactId>
         <version>${jettyVersion}</version>
       </dependency>
@@ -2831,7 +2777,7 @@
       <dependency>
         <groupId>org.eclipse.jetty</groupId>
         <artifactId>jetty-websocket</artifactId>
-        <version>${jettyVersion}</version>
+        <version>8.1.19.v20130131</version>
       </dependency>
       <dependency>
         <groupId>org.eclipse.jetty</groupId>
@@ -2842,6 +2788,11 @@
         <groupId>org.eclipse.jetty.aggregate</groupId>
         <artifactId>jetty-all-server</artifactId>
         <version>${jettyVersion}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.eclipse.jetty.orbit</groupId>
+        <artifactId>javax.servlet</artifactId>
+        <version>3.0.0.v201112011016</version>
       </dependency>
       <dependency>
         <groupId>org.eclipse.jetty.orbit</groupId>
@@ -3027,16 +2978,10 @@
         <artifactId>rome</artifactId>
         <version>1.0</version>
       </dependency>
-      <dependency>
-        <groupId>struts</groupId>
-        <artifactId>struts</artifactId>
-        <version>1.2.9</version>
-        <exclusions>
-          <exclusion>
-            <groupId>commons-logging</groupId>
-            <artifactId>commons-logging</artifactId>
-          </exclusion>
-        </exclusions>
+	  <dependency>
+	  	<groupId>org.apache.struts</groupId>
+  		<artifactId>struts2-core</artifactId>
+  		<version>2.3.16</version>
       </dependency>
       <dependency>
         <groupId>xalan</groupId>

@@ -112,7 +112,7 @@
       </plugin>
       <!-- plugin to use to run webapp in an embedded jetty -->
       <plugin>
-        <groupId>org.mortbay.jetty</groupId>
+        <groupId>org.eclipse.jetty</groupId>
         <artifactId>jetty-maven-plugin</artifactId>
         <configuration>
           <contextPath>/opennms</contextPath>
@@ -297,7 +297,7 @@
       <build>
         <plugins>
           <plugin>
-            <groupId>org.mortbay.jetty</groupId>
+            <groupId>org.eclipse.jetty</groupId>
             <artifactId>jetty-jspc-maven-plugin</artifactId>
             <executions>
               <execution>
@@ -325,6 +325,12 @@
               <dependency>
                 <groupId>org.opennms.dependencies</groupId>
                 <artifactId>spring-security-dependencies</artifactId>
+                <type>pom</type>
+                <version>${project.version}</version>
+              </dependency>
+              <dependency>
+                <groupId>org.opennms.dependencies</groupId>
+                <artifactId>jersey-dependencies</artifactId>
                 <type>pom</type>
                 <version>${project.version}</version>
               </dependency>
@@ -608,6 +614,11 @@
     </dependency>
     <dependency>
       <groupId>org.eclipse.jetty.orbit</groupId>
+      <artifactId>javax.servlet</artifactId>
+      <scope>provided</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.eclipse.jetty.orbit</groupId>
       <artifactId>org.apache.taglibs.standard.glassfish</artifactId>
       <scope>${onmsLibScope}</scope>
     </dependency>
@@ -641,12 +652,11 @@
       <artifactId>rome</artifactId>
       <scope>${onmsLibScope}</scope>
     </dependency>
-    <dependency>
-      <groupId>struts</groupId>
-      <artifactId>struts</artifactId>
+	<dependency>
+  		<groupId>org.apache.struts</groupId>
+		<artifactId>struts2-core</artifactId>
       <scope>${onmsLibScope}</scope>
-    </dependency>
-
+	</dependency>
     <!-- indirect 3rd-party dependencies that belong in WEB-INF/lib -->
     <!-- these should all be <scope>compile</scope> -->
 
@@ -661,17 +671,6 @@
         </exclusion>
       </exclusions>
     </dependency>
-    <!--
-
-      JMesa is the latest version of the extremecomponents library. We
-      should eventually migrate our code to use it.
-
-    <dependency>
-      <groupId>org.jmesa</groupId>
-      <artifactId>jmesa</artifactId>
-      <scope>${onmsLibScope}</scope>
-    </dependency>
-    -->
     <dependency>
         <groupId>net.sf.jung</groupId>
         <artifactId>jung-api</artifactId>

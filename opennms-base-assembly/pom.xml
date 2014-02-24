@@ -578,8 +578,8 @@
       <artifactId>rome</artifactId>
     </dependency>
     <dependency>
-      <groupId>struts</groupId>
-      <artifactId>struts</artifactId>
+      <groupId>org.apache.struts</groupId>
+      <artifactId>struts2-core</artifactId>
     </dependency>
     <!-- dependencies for SMS monitors -->
     <dependency>

@@ -33,16 +33,20 @@
 	session="true"
 	isErrorPage="true"
 %>
-<jsp:include page="/includes/header.jsp" flush="false" >
-  <jsp:param name="title" value="Error" />
-  <jsp:param name="headTitle" value="Page Not Found" />
-  <jsp:param name="headTitle" value="Error" />
-  <jsp:param name="breadcrumb" value="Error" />
-</jsp:include>
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Page Not Found | Error | OpenNMS ROOT Web Console</title>
+  <meta http-equiv="Content-type" content="text/html; charset=utf-8" />
+  <meta http-equiv="Content-Style-Type" content="text/css"/>
+  <meta http-equiv="Content-Script-Type" content="text/javascript"/>
+  <meta http-equiv="X-UA-Compatible" content="IE=8"/>
+</head>
+<body>
 
 <h1>Page Not Found</h1>
 <p>
   The page you were looking for does not exist.
 </p>
-
-<jsp:include page="/includes/footer.jsp" flush="false" />
+</body>
+</html>

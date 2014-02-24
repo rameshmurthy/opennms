@@ -31,14 +31,15 @@ package org.opennms.netmgt.jetty;
 import java.io.File;
 import java.util.Properties;
 
-import org.eclipse.jetty.ajp.Ajp13SocketConnector;
-import org.eclipse.jetty.server.Connector;
+import org.eclipse.jetty.server.HttpConfiguration;
+import org.eclipse.jetty.server.HttpConnectionFactory;
 import org.eclipse.jetty.server.NCSARequestLog;
+import org.eclipse.jetty.server.SecureRequestCustomizer;
 import org.eclipse.jetty.server.Server;
+import org.eclipse.jetty.server.ServerConnector;
+import org.eclipse.jetty.server.SslConnectionFactory;
 import org.eclipse.jetty.server.handler.HandlerCollection;
 import org.eclipse.jetty.server.handler.RequestLogHandler;
-import org.eclipse.jetty.server.nio.SelectChannelConnector;
-import org.eclipse.jetty.server.ssl.SslSocketConnector;
 import org.eclipse.jetty.util.ssl.SslContextFactory;
 import org.eclipse.jetty.webapp.WebAppContext;
 import org.opennms.netmgt.daemon.AbstractServiceDaemon;
@@ -77,22 +78,26 @@ public class JettyServer extends AbstractServiceDaemon {
         final File webappsDir = new File(homeDir, "jetty-webapps");
 
         m_server = new Server();
-        final Connector connector = new SelectChannelConnector();
+
+        HttpConfiguration http_config = new HttpConfiguration();
+        http_config.setOutputBufferSize(32768);
+        final Integer requestHeaderSize = Integer.getInteger("org.opennms.netmgt.jetty.requestHeaderSize");
+        if(requestHeaderSize != null) {
+            http_config.setRequestHeaderSize(requestHeaderSize);
+        }
+
+        ServerConnector http = new ServerConnector(m_server, new HttpConnectionFactory(http_config));
         final Integer port = Integer.getInteger("org.opennms.netmgt.jetty.port", m_port);
-        connector.setPort(port);
+        http.setPort(port);
 
         final String host = System.getProperty("org.opennms.netmgt.jetty.host");
         if (host != null) {
-            connector.setHost(host);
+            http.setHost(host);
         }
 
-        final Integer requestHeaderSize = Integer.getInteger("org.opennms.netmgt.jetty.requestHeaderSize");
-        if(requestHeaderSize != null) {
-            connector.setRequestHeaderSize(requestHeaderSize);
-        }
+        m_server.addConnector(http);
 
-        m_server.addConnector(connector);
-
+/*
         final Integer ajp_port = Integer.getInteger("org.opennms.netmgt.jetty.ajp-port");
         if (ajp_port != null) {
             final Ajp13SocketConnector ajpConnector = new Ajp13SocketConnector();
@@ -101,6 +106,7 @@ public class JettyServer extends AbstractServiceDaemon {
             ajpConnector.setRequestHeaderSize(8096);
             m_server.addConnector(ajpConnector);
         }
+*/
 
         final Integer https_port = Integer.getInteger("org.opennms.netmgt.jetty.https-port");
         if (https_port != null) {
@@ -109,7 +115,8 @@ public class JettyServer extends AbstractServiceDaemon {
             final String keyManagerPassword = System.getProperty("org.opennms.netmgt.jetty.https-keypassword", "changeit");
             final String certificateAlias = System.getProperty("org.opennms.netmgt.jetty.https-cert-alias", null);
 
-            final SslContextFactory contextFactory = new SslContextFactory(keyStorePath);
+            final SslContextFactory contextFactory = new SslContextFactory();
+            contextFactory.setKeyStorePath(keyStorePath);
             contextFactory.setKeyStorePassword(keyStorePassword);
             contextFactory.setKeyManagerPassword(keyManagerPassword);
             if (certificateAlias != null && !"".equals(certificateAlias.trim())) {
@@ -118,15 +125,24 @@ public class JettyServer extends AbstractServiceDaemon {
 
             excludeCipherSuites(contextFactory, https_port);
 
-            final SslSocketConnector sslConnector = new SslSocketConnector(contextFactory);
-            sslConnector.setPort(https_port);
+            http_config.setSecureScheme("https");
+            http_config.setSecurePort(https_port);
+
+            HttpConfiguration https_config = new HttpConfiguration(http_config);
+            https_config.addCustomizer(new SecureRequestCustomizer());
+            
+            ServerConnector https = new ServerConnector(m_server,
+                                                        new SslConnectionFactory(contextFactory,"http/1.1"),
+                                                        new HttpConnectionFactory(https_config));
+            https.setPort(https_port);
+            https.setIdleTimeout(500000);
 
             final String httpsHost = System.getProperty("org.opennms.netmgt.jetty.https-host");
             if (httpsHost != null) {
-                sslConnector.setHost(httpsHost);
+                https.setHost(httpsHost);
             }
 
-            m_server.addConnector(sslConnector);
+            m_server.addConnector(https);
         }
 
         final HandlerCollection handlers = new HandlerCollection();
