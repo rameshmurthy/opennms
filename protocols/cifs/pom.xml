@@ -12,7 +12,7 @@
     <name>OpenNMS Protocols CIFS Support</name>
 
     <properties>
-        <powermock.version>1.5</powermock.version>
+        <powermock.version>1.5.4</powermock.version>
     </properties>
 
     <dependencies>

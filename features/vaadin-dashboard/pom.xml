@@ -101,7 +101,7 @@
                 <configuration>
                     <bundles>
                         <bundle>mvn:org.opennms.features/vaadin-dashboard/${project.version}</bundle>
-                        <bundle>wrap:mvn:org.vaadin.addons/dragdroplayouts/1.0.0.alpha4</bundle>
+                        <bundle>wrap:mvn:org.vaadin.addons/dragdroplayouts/1.0</bundle>
                     </bundles>
                     <features>
                         <feature>vaadin</feature>
@@ -160,7 +160,7 @@
         <dependency>
             <groupId>org.vaadin.addons</groupId>
             <artifactId>dragdroplayouts</artifactId>
-            <version>1.0.0.alpha4</version>
+            <version>1.0</version>
         </dependency>
 
         <dependency>
