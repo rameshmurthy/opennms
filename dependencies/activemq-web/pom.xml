@@ -85,6 +85,10 @@
           <groupId>org.eclipse.jetty</groupId>
           <artifactId>jetty-websocket</artifactId>
         </exclusion>
+        <exclusion>
+          <groupId>org.apache.activemq</groupId>
+          <artifactId>activemq-camel</artifactId>
+        </exclusion>
       </exclusions>
     </dependency>
     <dependency>
