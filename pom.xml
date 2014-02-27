@@ -996,7 +996,7 @@
     <gwtVersion>2.6.0</gwtVersion>
     <gwtPluginVersion>2.6.0</gwtPluginVersion>
     <httpcoreVersion>4.3.2</httpcoreVersion>
-    <httpclientVersion>4.3.2</httpclientVersion>
+    <httpclientVersion>4.3.3</httpclientVersion>
     <jacksonVersion>1.9.13</jacksonVersion>
     <jasperreportsVersion>3.7.6</jasperreportsVersion>
     <jettyVersion>9.1.2.v20140210</jettyVersion>
@@ -2453,7 +2453,7 @@
       <dependency>
         <groupId>org.apache.commons</groupId>
         <artifactId>commons-exec</artifactId>
-        <version>1.0.1</version>
+        <version>1.2</version>
       </dependency>
       <dependency>
         <groupId>org.apache.httpcomponents</groupId>
@@ -3079,6 +3079,11 @@
         <groupId>org.powermock</groupId>
         <artifactId>powermock-api-mockito</artifactId>
         <version>1.5.4</version>
+      </dependency>
+      <dependency>
+        <groupId>args4j</groupId>
+        <artifactId>args4j</artifactId>
+        <version>2.0.26</version>
       </dependency>
     </dependencies>
   </dependencyManagement>
