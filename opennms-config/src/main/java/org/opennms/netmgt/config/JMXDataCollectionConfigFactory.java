@@ -32,7 +32,6 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashMap;
@@ -65,8 +64,6 @@ import org.springframework.core.io.Resource;
  * <em>init()</em> is called before calling any other method to ensure the
  * config is loaded before accessing other convenience methods.
  *
- * @author <A HREF="mailto:mike@opennms.org">Mike Jamison </A>
- * @author <A HREF="http://www.opennms.org/">OpenNMS </A>
  * @author <A HREF="mailto:mike@opennms.org">Mike Jamison </A>
  * @author <A HREF="http://www.opennms.org/">OpenNMS </A>
  * @version $Id: $
@@ -122,51 +119,9 @@ public final class JMXDataCollectionConfigFactory {
     }
 
     private void buildCollectionMap() {
-        // Build collection map which is a hash map of Collection
-        // objects indexed by collection name...also build
-        // collection group map which is a hash map indexed
-        // by collection name with a hash map as the value
-        // containing a map of the collections's group names
-        // to the Group object containing all the information
-        // for that group. So the associations are:
-        //
-        // CollectionMap
-        // collectionName -> Collection
-        //
-        // CollectionGroupMap
-        // collectionName -> groupMap
-        // 
-        // GroupMap
-        // groupMapName -> Group
-        //
-        // This is parsed and built at initialization for
-        // faster processing at run-time.
-        // 
         m_collectionMap = new HashMap<String, JmxCollection>();
 
-        // Map of group maps indexed by SNMP collection name.
-        // TODO: This appears to be unused
-        Map<String, Map<String, Mbean>> collectionGroupMap = new HashMap<String, Map<String, Mbean>>();
-        
-        // BOZO isn't the collection name defined in the jmx-datacollection.xml file and
-        // global to all the mbeans?
-        Collection<JmxCollection> collections = m_config.getJmxCollectionCollection();
-        Iterator<JmxCollection> citer = collections.iterator();
-        while (citer.hasNext()) {
-            JmxCollection collection = citer.next();
-
-            // Build group map for this collection
-            Map<String, Mbean> groupMap = new HashMap<String, Mbean>();
-
-            Mbeans mbeans = collection.getMbeans();
-            Collection<Mbean> groupList = mbeans.getMbeanCollection();
-            Iterator<Mbean> giter = groupList.iterator();
-            while (giter.hasNext()) {
-                Mbean mbean = giter.next();
-                groupMap.put(mbean.getName(), mbean);
-            }
-
-            collectionGroupMap.put(collection.getName(), groupMap);
+        for (JmxCollection collection : m_config.getJmxCollection()) {
             m_collectionMap.put(collection.getName(), collection);
         }
     }
@@ -251,14 +206,11 @@ public final class JMXDataCollectionConfigFactory {
      * @return a list of MIB objects
      */
     public Map<String, List<Attrib>> getAttributeMap(String cName, String aSysoid, String anAddress) {
-        
         Map<String, List<Attrib>> attributeMap = new HashMap<String, List<Attrib>>();
-
 
         LOG.debug("getMibObjectList: collection: {} sysoid: {} address: {}", anAddress, cName, aSysoid);
 
         if (aSysoid == null) {
-
             LOG.debug("getMibObjectList: aSysoid parameter is NULL...");
             return attributeMap;
         }
@@ -271,11 +223,8 @@ public final class JMXDataCollectionConfigFactory {
         }
         
         Mbeans beans = collection.getMbeans();
-        
-        Enumeration<Mbean> en = beans.enumerateMbean();
-        while (en.hasMoreElements()) {
+        for (Mbean mbean : beans.getMbean()) {
             List<Attrib> list = new ArrayList<Attrib>();
-            Mbean mbean = en.nextElement();
             Attrib[] attributes = mbean.getAttrib();
             for (int i = 0; i < attributes.length; i++) {
                 list.add(attributes[i]);
@@ -313,12 +262,8 @@ public final class JMXDataCollectionConfigFactory {
         if (collection == null) {
             LOG.warn("no collection named '{}' was found", cName);
         } else {
-            Mbeans beans = collection.getMbeans();
-            Enumeration<Mbean> en = beans.enumerateMbean();
-            while (en.hasMoreElements()) {
+            for (Mbean mbean : collection.getMbeans().getMbean()) {
                 BeanInfo beanInfo = new BeanInfo();
-                
-                Mbean mbean = en.nextElement();
                 beanInfo.setMbeanName(mbean.getName());
                 beanInfo.setObjectName(mbean.getObjectname());
                 beanInfo.setKeyField(mbean.getKeyfield());
@@ -351,34 +296,6 @@ public final class JMXDataCollectionConfigFactory {
                 beanInfo.setCompositeAttributes(compAttribNameList);
                 map.put(mbean.getObjectname(), beanInfo);
             }
-        }
-        return Collections.unmodifiableMap(map);
-    }
-
-    /**
-     * <p>getMBeanInfo_save</p>
-     *
-     * @param cName a {@link java.lang.String} object.
-     * @return a {@link java.util.Map} object.
-     */
-    public Map<String, String[]> getMBeanInfo_save(String cName) {
-        Map<String, String[]> map = new HashMap<String, String[]>();
-        
-        // Retrieve the appropriate Collection object
-        // 
-        JmxCollection collection = m_collectionMap.get(cName);
-        
-        Mbeans beans = collection.getMbeans();
-        Enumeration<Mbean> en = beans.enumerateMbean();
-        while (en.hasMoreElements()) {
-            Mbean mbean = en.nextElement();
-            int count = mbean.getAttribCount();
-            String[] attribs = new String[count];
-            Attrib[] attributes = mbean.getAttrib();
-            for (int i = 0; i < attributes.length; i++) {
-                attribs[i] = attributes[i].getName();
-            }
-            map.put(mbean.getObjectname(), attribs);
         }
         return Collections.unmodifiableMap(map);
     }
