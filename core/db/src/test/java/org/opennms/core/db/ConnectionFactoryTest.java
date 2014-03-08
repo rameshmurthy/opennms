@@ -180,7 +180,7 @@ public class ConnectionFactoryTest extends TestCase {
 
 			// Only sleep for a bit after spawning 10 threads so that we force some
 			// contention.
-			if (i % 10 == 0) Thread.sleep(200);
+			if (i % 10 == 0) Thread.sleep(500);
 		}
 	}
 
