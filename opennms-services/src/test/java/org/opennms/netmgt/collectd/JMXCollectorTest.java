@@ -234,7 +234,6 @@ public class JMXCollectorTest {
         assertEquals(1, jmxCollectionResources.size());
         JMXCollectionResource jmxCollectionResource = jmxCollectionResources.get(0);
         logger.debug("jmxCollectionResource: {}", jmxCollectionResource);
-        logger.debug("jmxCollectionResource.groups: {}", jmxCollectionResource.getGroups());
         AttributeGroup group = jmxCollectionResource.getGroup(new AttributeGroupType("java_lang_type_Memory", "all"));
         printDebugAttributeGroup(group);
         assertEquals(4, group.getAttributes().size());
