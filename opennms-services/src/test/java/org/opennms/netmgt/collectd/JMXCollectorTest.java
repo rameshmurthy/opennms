@@ -1,8 +1,8 @@
 /*******************************************************************************
  * This file is part of OpenNMS(R).
  *
- * Copyright (C) 2012 The OpenNMS Group, Inc.
- * OpenNMS(R) is Copyright (C) 1999-2012 The OpenNMS Group, Inc.
+ * Copyright (C) 2014 The OpenNMS Group, Inc.
+ * OpenNMS(R) is Copyright (C) 1999-2014 The OpenNMS Group, Inc.
  *
  * OpenNMS(R) is a registered trademark of The OpenNMS Group, Inc.
  *
@@ -66,7 +66,7 @@ import org.slf4j.LoggerFactory;
  */
 public class JMXCollectorTest {
 
-    private static Logger logger = LoggerFactory.getLogger(JMXCollectorTest.class);
+    private static final Logger logger = LoggerFactory.getLogger(JMXCollectorTest.class);
 
     private JMXCollector jmxCollector;
 
@@ -125,7 +125,7 @@ public class JMXCollectorTest {
         List<String> attributes = new ArrayList<String>();
         attributes.add("X");
         attributes.add("Name");
-//TODO Tak: Test attributes that will return null is the next step        
+//TODO Tak: Test attributes that will return null is the next step
 //        attributes.add("NullString");
         beanInfo.setAttributes(attributes);
         mBeans.put("first", beanInfo);
@@ -144,7 +144,7 @@ public class JMXCollectorTest {
         String collectionName = "collectSingleMbeanWithSingleAttribute";
         jmxNodeInfo.setMBeans(jmxConfigFactory.getMBeanInfo(collectionName));
         jmxNodeInfo.setDsMap(generateDataSourceMap(jmxConfigFactory.getAttributeMap(collectionName, "", "")));
-        
+
         //start collection
         CollectionSet collectionSet = jmxCollector.collect(collectionAgent, null, null);
         JMXCollectionSet jmxCollectionSet = (JMXCollectionSet) collectionSet;
@@ -154,20 +154,20 @@ public class JMXCollectorTest {
         AttributeGroup group = jmxCollectionResource.getGroup(new AttributeGroupType("java_lang_type_Compilation", "all"));
         assertEquals(1, group.getAttributes().size());
         printDebugAttributeGroup(group);
-        
+
         //ToDo Tak how to check if all metrics where collected?
         assertEquals("Collection: " + collectionName + " run successfully", 1, collectionSet.getStatus());
     }
-    
+
     /**
-     * Single attributes not provided by the agent will be ignored 
+     * Single attributes not provided by the agent will be ignored
      */
     @Test
     public void collectSingleMbeanWithOneNotAvailableAttribute() {
         String collectionName = "collectSingleMbeanWithOneNotAvailableAttribute";
         jmxNodeInfo.setMBeans(jmxConfigFactory.getMBeanInfo(collectionName));
         jmxNodeInfo.setDsMap(generateDataSourceMap(jmxConfigFactory.getAttributeMap(collectionName, "", "")));
-        
+
         //start collection
         CollectionSet collectionSet = jmxCollector.collect(collectionAgent, null, null);
         JMXCollectionSet jmxCollectionSet = (JMXCollectionSet) collectionSet;
@@ -177,7 +177,7 @@ public class JMXCollectorTest {
         AttributeGroup group = jmxCollectionResource.getGroup(new AttributeGroupType("java_lang_type_Compilation", "all"));
         assertEquals(0, group.getAttributes().size());
         printDebugAttributeGroup(group);
-        
+
         assertEquals("Collection: " + collectionName + " run successfully", 1, collectionSet.getStatus());
     }
 
@@ -186,7 +186,7 @@ public class JMXCollectorTest {
         String collectionName = "collectSingleMbeanWithOneNotAvailableAttributesAndOneAvailableAttributes";
         jmxNodeInfo.setMBeans(jmxConfigFactory.getMBeanInfo(collectionName));
         jmxNodeInfo.setDsMap(generateDataSourceMap(jmxConfigFactory.getAttributeMap(collectionName, "", "")));
-        
+
         //start collection
         CollectionSet collectionSet = jmxCollector.collect(collectionAgent, null, null);
         JMXCollectionSet jmxCollectionSet = (JMXCollectionSet) collectionSet;
@@ -196,16 +196,16 @@ public class JMXCollectorTest {
         AttributeGroup group = jmxCollectionResource.getGroup(new AttributeGroupType("java_lang_type_Compilation", "all"));
         assertEquals(1, group.getAttributes().size());
         printDebugAttributeGroup(group);
-        
+
         assertEquals("Collection: " + collectionName + " run successfully", 1, collectionSet.getStatus());
     }
-    
+
     @Test
     public void collectSingleMbeanWithManyNotAvailableAttributesAndManyAvailableAttributes() {
         String collectionName = "collectSingleMbeanWithManyNotAvailableAttributesAndManyAvailableAttributes";
         jmxNodeInfo.setMBeans(jmxConfigFactory.getMBeanInfo(collectionName));
         jmxNodeInfo.setDsMap(generateDataSourceMap(jmxConfigFactory.getAttributeMap(collectionName, "", "")));
-        
+
         //start collection
         CollectionSet collectionSet = jmxCollector.collect(collectionAgent, null, null);
         JMXCollectionSet jmxCollectionSet = (JMXCollectionSet) collectionSet;
@@ -215,35 +215,39 @@ public class JMXCollectorTest {
         AttributeGroup group = jmxCollectionResource.getGroup(new AttributeGroupType("java_lang_type_OperatingSystem", "all"));
         assertEquals(8, group.getAttributes().size());
         printDebugAttributeGroup(group);
-        
+
         assertEquals("Collection: " + collectionName + " run successfully", 1, collectionSet.getStatus());
     }
-    
+
     @Test
     public void collectSingleMbeanWithOneCompAttribWithAllItsCompMembers() {
         String collectionName = "collectSingleMbeanWithOneCompAttribWithAllItsCompMembers";
         jmxNodeInfo.setMBeans(jmxConfigFactory.getMBeanInfo(collectionName));
         jmxNodeInfo.setDsMap(generateDataSourceMap(jmxConfigFactory.getAttributeMap(collectionName, "", "")));
-        
+        //printDataSourceMap(jmxNodeInfo.getDsMap());
+
         //start collection
         CollectionSet collectionSet = jmxCollector.collect(collectionAgent, null, null);
         JMXCollectionSet jmxCollectionSet = (JMXCollectionSet) collectionSet;
         List<JMXCollectionResource> jmxCollectionResources = jmxCollectionSet.getCollectionResources();
+        //logger.debug("jmxCollectionResources: {}", jmxCollectionResources);
         assertEquals(1, jmxCollectionResources.size());
         JMXCollectionResource jmxCollectionResource = jmxCollectionResources.get(0);
+        logger.debug("jmxCollectionResource: {}", jmxCollectionResource);
+        logger.debug("jmxCollectionResource.groups: {}", jmxCollectionResource.getGroups());
         AttributeGroup group = jmxCollectionResource.getGroup(new AttributeGroupType("java_lang_type_Memory", "all"));
-        assertEquals(4, group.getAttributes().size());
         printDebugAttributeGroup(group);
-        
+        assertEquals(4, group.getAttributes().size());
+
         assertEquals("Collection: " + collectionName + " run successfully", 1, collectionSet.getStatus());
-    }        
-    
+    }
+
     @Test
     public void collectSingleMbeanWithOneCompAttribWithOneIgnoredCompMembers() {
         String collectionName = "collectSingleMbeanWithOneCompAttribWithOneIgnoredCompMembers";
         jmxNodeInfo.setMBeans(jmxConfigFactory.getMBeanInfo(collectionName));
         jmxNodeInfo.setDsMap(generateDataSourceMap(jmxConfigFactory.getAttributeMap(collectionName, "", "")));
-        
+
         //start collection
         CollectionSet collectionSet = jmxCollector.collect(collectionAgent, null, null);
         JMXCollectionSet jmxCollectionSet = (JMXCollectionSet) collectionSet;
@@ -253,9 +257,9 @@ public class JMXCollectorTest {
         AttributeGroup group = jmxCollectionResource.getGroup(new AttributeGroupType("java_lang_type_Memory", "all"));
         assertEquals(3, group.getAttributes().size());
         printDebugAttributeGroup(group);
-        
+
         assertEquals("Collection: " + collectionName + " run successfully", 1, collectionSet.getStatus());
-    }        
+    }
 
     /**
      * Check if CompositeAttributes will be collected
@@ -325,7 +329,7 @@ public class JMXCollectorTest {
     private Map<String, JMXDataSource> generateDataSourceMap(Map<String, List<Attrib>> attributeMap) {
         return jmxCollector.buildDataSourceList("foo", attributeMap);
     }
-        
+
     private void printDebugAttributeGroup(AttributeGroup group) {
         for (CollectionAttribute collectionAttribute : group.getAttributes()) {
             logger.debug("Attribute Type   '{}'", collectionAttribute.getAttributeType());
@@ -334,7 +338,14 @@ public class JMXCollectorTest {
             logger.debug("Attrubute Value  '{}'", collectionAttribute.getStringValue());
         }
     }
-    
+
+    private void printDataSourceMap(Map<String, JMXDataSource> dsMap) {
+        for (Map.Entry<String, JMXDataSource> entry : dsMap.entrySet()) {
+            logger.debug("key={}", entry.getKey());
+            logger.debug("{}\n\n", entry.getValue());
+        }
+    }
+
     public class JMXCollectorImpl extends JMXCollector {
         public JMXCollectorImpl() {
             super();
