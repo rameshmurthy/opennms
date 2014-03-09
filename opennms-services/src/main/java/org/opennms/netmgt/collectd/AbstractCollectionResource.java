@@ -29,6 +29,7 @@
 package org.opennms.netmgt.collectd;
 
 import java.io.File;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -53,12 +54,12 @@ import org.slf4j.LoggerFactory;
  * @version $Id: $
  */
 public abstract class AbstractCollectionResource implements CollectionResource {
-    
+
     private static final Logger LOG = LoggerFactory.getLogger(AbstractCollectionResource.class);
 
     protected CollectionAgent m_agent;
-    private Map<AttributeGroupType, AttributeGroup> m_attributeGroups;
-    
+    private final Map<AttributeGroupType, AttributeGroup> m_attributeGroups;
+
     /**
      * <p>Constructor for AbstractCollectionResource.</p>
      *
@@ -68,7 +69,7 @@ public abstract class AbstractCollectionResource implements CollectionResource {
         m_agent=agent;
         m_attributeGroups=new HashMap<AttributeGroupType, AttributeGroup>();
     }
-    
+
     /**
      * <p>getOwnerName</p>
      *
@@ -109,7 +110,11 @@ public abstract class AbstractCollectionResource implements CollectionResource {
         }
         return group;
     }
-    
+
+    protected Map<AttributeGroupType, AttributeGroup> getGroups() {
+        return Collections.unmodifiableMap(m_attributeGroups);
+    }
+
     /** {@inheritDoc} */
     @Override
     public void visit(CollectionSetVisitor visitor) {
@@ -149,7 +154,7 @@ public abstract class AbstractCollectionResource implements CollectionResource {
     public String getLabel() {
         return null;
     }
-    
+
     @Override
     public TimeKeeper getTimeKeeper() {
         return null;
