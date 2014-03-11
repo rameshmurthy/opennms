@@ -44,26 +44,19 @@ public abstract class JMXCollectionResource extends AbstractCollectionResource {
         super(agent);
     }
 
-    /* (non-Javadoc)
-     * @see org.opennms.netmgt.config.collector.CollectionResource#getInstance()
-     */
-    public abstract String getInstance();
-
-    /* (non-Javadoc)
+    /*
+     * (non-Javadoc)
      * @see org.opennms.netmgt.config.collector.CollectionResource#getParent()
      */
+    @Override
     public String getParent() {
         return m_agent.getStorageDir().toString();
     }
 
     /* (non-Javadoc)
-     * @see org.opennms.netmgt.config.collector.CollectionResource#getResourceTypeName()
-     */
-    public abstract String getResourceTypeName();
-
-    /* (non-Javadoc)
      * @see org.opennms.netmgt.collectd.AbstractCollectionResource#getType()
      */
+    @Override
     public int getType() {
         return -1; // Is this right?
     }
@@ -71,6 +64,7 @@ public abstract class JMXCollectionResource extends AbstractCollectionResource {
     /* (non-Javadoc)
      * @see org.opennms.netmgt.collectd.AbstractCollectionResource#rescanNeeded()
      */
+    @Override
     public boolean rescanNeeded() {
         return false;
     }
@@ -89,6 +83,7 @@ public abstract class JMXCollectionResource extends AbstractCollectionResource {
     /* (non-Javadoc)
      * @see org.opennms.netmgt.collectd.AbstractCollectionResource#shouldPersist(org.opennms.netmgt.config.collector.ServiceParameters)
      */
+    @Override
     public boolean shouldPersist(ServiceParameters params) {
         return true;
     }
