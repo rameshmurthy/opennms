@@ -103,13 +103,6 @@ import org.opennms.netmgt.provision.persist.foreignsource.ForeignSource;
 import org.opennms.netmgt.provision.persist.foreignsource.PluginConfig;
 import org.opennms.netmgt.provision.persist.policies.NodeCategorySettingPolicy;
 import org.opennms.netmgt.provision.persist.requisition.Requisition;
-import org.opennms.netmgt.provision.service.ImportScheduler;
-import org.opennms.netmgt.provision.service.ModelImportException;
-import org.opennms.netmgt.provision.service.NodeScan;
-import org.opennms.netmgt.provision.service.NodeScanSchedule;
-import org.opennms.netmgt.provision.service.ProvisionService;
-import org.opennms.netmgt.provision.service.Provisioner;
-import org.opennms.netmgt.provision.service.ProvisioningTestCase;
 import org.opennms.netmgt.snmp.SnmpAgentAddress;
 import org.opennms.netmgt.xml.event.Event;
 import org.opennms.test.JUnitConfigurationEnvironment;
@@ -354,9 +347,51 @@ public class ProvisionerTest extends ProvisioningTestCase implements Initializin
         assertEquals(6, getSnmpInterfaceDao().countAll());
 
     }
+
+    @Test(timeout = 300000)
+    // 192.0.2.0/24 reserved by IANA for testing purposes
+    @JUnitSnmpAgent(host = "192.0.2.123", resource = "classpath:NMS-6452-brocade.properties")
+    public void testNMS6452() throws Exception {
+        importFromResource("classpath:/NMS-6452-brocade.xml", true);
+
+        OnmsNode node = getNodeDao().findByForeignId("empty", "123");
+
+        assertEquals(1, getNodeDao().countAll());
+
+        //Verify ipinterface count
+        assertEquals(1, getInterfaceDao().countAll());
+
+        //Verify ifservices count
+        assertEquals(3, getMonitoredServiceDao().countAll());
+
+        //Verify service count
+        assertEquals(3, getServiceTypeDao().countAll());
+
+        //Verify snmpInterface count
+        assertEquals(0, getSnmpInterfaceDao().countAll());
+
+        final NodeScan scan = m_provisioner.createNodeScan(node.getId(), node.getForeignSource(), node.getForeignId());
+        runScan(scan);
+
+        assertEquals(1, getNodeDao().countAll());
+
+        //Verify ipinterface count
+        assertEquals(2, getInterfaceDao().countAll());
+
+        //Verify ifservices count
+        assertEquals(3, getMonitoredServiceDao().countAll());
+
+        //Verify service count
+        assertEquals(3, getServiceTypeDao().countAll());
+
+        //Verify snmpInterface count
+        assertEquals(30, getSnmpInterfaceDao().countAll());
+
+    }
+
     /**
      * We have to ignore this test until there is a DNS service available in the test harness
-     * 
+     *
      * @throws ForeignSourceRepositoryException
      * @throws MalformedURLException
      */
@@ -1045,7 +1080,7 @@ public class ProvisionerTest extends ProvisioningTestCase implements Initializin
     /**
      * This test first bulk imports 10 nodes then runs update with 1 node missing
      * from the import file.
-     * 
+     *
      * @throws ModelImportException
      */
     @Test(timeout=300000)
@@ -1055,7 +1090,7 @@ public class ProvisionerTest extends ProvisioningTestCase implements Initializin
         m_provisioner.importModelFromResource(new ClassPathResource("/utf-8.xml"), true);
 
         assertEquals(1, getNodeDao().countAll());
-        // \u00f1 is unicode for n~ 
+        // \u00f1 is unicode for n~
         final OnmsNode onmsNode = getNodeDao().get(nextNodeId);
         LOG.debug("node = {}", onmsNode);
         assertEquals("\u00f1ode2", onmsNode.getLabel());
@@ -1065,7 +1100,7 @@ public class ProvisionerTest extends ProvisioningTestCase implements Initializin
     /**
      * This test first bulk imports 10 nodes then runs update with 1 node missing
      * from the import file.
-     * 
+     *
      * @throws ModelImportException
      */
     @Test(timeout=300000)
@@ -1317,7 +1352,8 @@ public class ProvisionerTest extends ProvisioningTestCase implements Initializin
     /**
      * Test that the parent-foreign-source attribute in a requisition can add a parent to a
      * node that resides in a different provisioning group.
-     * 
+     *
+     * @throws java.lang.Exception
      * @see http://issues.opennms.org/browse/NMS-4109
      */
     @Test(timeout=300000)
@@ -1395,13 +1431,13 @@ public class ProvisionerTest extends ProvisioningTestCase implements Initializin
     private static Event nodeDeleted(int nodeid) {
         EventBuilder bldr = new EventBuilder(EventConstants.NODE_DELETED_EVENT_UEI, "Test");
         bldr.setNodeid(nodeid);
-        return bldr.getEvent();        
+        return bldr.getEvent();
     }
 
     private static Event deleteNode(int nodeid) {
         EventBuilder bldr = new EventBuilder(EventConstants.DELETE_NODE_EVENT_UEI, "Test");
         bldr.setNodeid(nodeid);
-        return bldr.getEvent();        
+        return bldr.getEvent();
     }
 
     private static Event interfaceDeleted(int nodeid, String ipaddr) {

@@ -32,6 +32,7 @@ import static org.opennms.core.utils.InetAddressUtils.getInetAddress;
 import static org.opennms.core.utils.InetAddressUtils.normalize;
 import static org.opennms.core.utils.InetAddressUtils.str;
 
+import java.io.UnsupportedEncodingException;
 import java.net.InetAddress;
 import java.util.Arrays;
 
@@ -106,18 +107,37 @@ public class IPAddressTableTracker extends TableTracker {
             final int addressType = instanceIds[0];
             int addressIndex = 2;
             int addressLength = instanceIds[1];
-            // Begin NMS-4906 Lame Force 10 agent!
+            LOG.debug("addressType: {}, addressLength: {}, instanceIds.length: {}", addressType, addressLength, instanceIds.length);
+
+            // NMS-6452: Some older Brocade Switches represent the IP address as a octet string.
+            // Begin NMS-4904 Lame Force 10 agent!
             if (addressType == TYPE_IPV4 && instanceIds.length != 6) {
                 LOG.warn("BAD AGENT: Does not conform to RFC 4001 Section 4.1 Table Indexing!!! Report them immediately.  Making a best guess!");
+                if (instanceIds.length == (addressLength + addressIndex)) {
+                    try {
+                        final InetAddress address = byteStringToInetAddress(instanceIds, addressIndex, addressLength);
+                        return str(address);
+                    } catch (UnsupportedEncodingException e) {
+                        LOG.debug("BAD AGENT: Could not parse raw oids as octet string", e);
+                    }
+                }
                 addressIndex = instanceIds.length - 4;
                 addressLength = 4;
             }
             if (addressType == TYPE_IPV6 && instanceIds.length != 18) {
                 LOG.warn("BAD AGENT: Does not conform to RFC 4001 Section 4.1 Table Indexing!!! Report them immediately.  Making a best guess!");
+                if (instanceIds.length == (addressLength + addressIndex)) {
+                    try {
+                        final InetAddress address = byteStringToInetAddress(instanceIds, addressIndex, addressLength);
+                        return str(address);
+                    } catch (UnsupportedEncodingException e) {
+                        LOG.debug("BAD AGENT: Could not parse raw oids as octet string", e);
+                    }
+                }
                 addressIndex = instanceIds.length - 16;
                 addressLength = 16;
             }
-            // End NMS-4906 Lame Force 10 agent!
+            // End NMS-4904 Lame Force 10 agent!
 
             // we ignore zones anyways, make sure we truncate to just the address part, since InetAddress doesn't know how to parse zone bytes
             if (addressType == TYPE_IPV4Z) {
@@ -140,6 +160,16 @@ public class IPAddressTableTracker extends TableTracker {
                 }
             }
             return null;
+        }
+        
+        private InetAddress byteStringToInetAddress(final int[] rawIds, int offset, int length) throws UnsupportedEncodingException {
+            final byte[] addressBytes = new byte[length];
+            for (int i = 0; i < addressBytes.length; i++) {
+                addressBytes[i] = Integer.valueOf(rawIds[i + offset]).byteValue();
+            }
+            String ipaddr = new String(addressBytes, "UTF-8");
+            LOG.debug("addressBytes: {}", ipaddr);
+            return getInetAddress(ipaddr);
         }
 
         public Integer getType() {
@@ -164,8 +194,9 @@ public class IPAddressTableTracker extends TableTracker {
             final int mask = rawIds[rawIds.length - 1];
             int addressLength = rawIds[2];
             int addressIndex = 3;
+            LOG.debug("addressType: {}, addressLength: {}", addressType, addressLength);
 
-            // Begin NMS-4906 Lame Force 10 agent!
+            // Begin NMS-4904 Lame Force 10 agent!
             if (addressType == TYPE_IPV4 && rawIds.length != 1+6+1) {
                 LOG.warn("BAD AGENT: Does not conform to RFC 4001 Section 4.1 Table Indexing!!! Report them immediately.  Making a best guess!");
                 addressIndex = rawIds.length - (4+1);
@@ -176,7 +207,7 @@ public class IPAddressTableTracker extends TableTracker {
                 addressIndex = rawIds.length - (16 + 1);
                 addressLength = 16;
             }
-            // End NMS-4906 Lame Force 10 agent!
+            // End NMS-4904 Lame Force 10 agent!
 
             if (addressIndex < 0 || addressIndex + addressLength > rawIds.length) {
                 LOG.warn("BAD AGENT: Returned instanceId {} does not enough bytes to contain address!. Skipping.", netmaskRef);
